@@ -50,16 +50,17 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
 ## Repo-Struktur
 
 ```
-boot.py           Aktiviert den zweiten USB-CDC-Datenkanal (usb_cdc.data)
-code.py           Hauptprogramm: Taster-Logik, HID-Ausgabe, Mausjiggler, Sync
-macros.py         Anpassbare Texte/Konstanten (TEXT_M2, TEXT_M4, TODO_SIGNATURE)
+src/boot.py       Aktiviert den zweiten USB-CDC-Datenkanal (usb_cdc.data)
+src/code.py       Hauptprogramm: Taster-Logik, HID-Ausgabe, Mausjiggler, Sync
+src/macros.py     Anpassbare Texte/Konstanten (TEXT_M2, TEXT_M4, TODO_SIGNATURE)
+install/          CircuitPython-UF2 für den Pico (de_DE)
 MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
 ```
 
 ## Einrichtung (Pico)
 
 1. [CircuitPython](https://circuitpython.org/board/raspberry_pi_pico/) auf den
-   Pico flashen.
+   Pico flashen (die passende UF2-Datei liegt auch in `install/`).
 2. `adafruit_hid` aus dem
    [Adafruit CircuitPython Bundle](https://circuitpython.org/libraries) in
    `lib/` kopieren.
@@ -67,8 +68,8 @@ MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
    `keycode_win_de.py` aus
    [Neradoc/Circuitpython_Keyboard_Layouts](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts)
    nach `lib/` kopieren.
-4. `boot.py`, `code.py` und `macros.py` auf das `CIRCUITPY`-Laufwerk kopieren
-   (alle drei im Root, `macros.py` muss neben `code.py` liegen).
+4. `boot.py`, `code.py` und `macros.py` aus `src/` auf das `CIRCUITPY`-Laufwerk
+   kopieren (alle drei ins Root, `macros.py` muss neben `code.py` liegen).
 5. `macros.py` an die eigenen Texte anpassen (Name/Kürzel für M1, Text für die
    M1+M3-Combo).
 
