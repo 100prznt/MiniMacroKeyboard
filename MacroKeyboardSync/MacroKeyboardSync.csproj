@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- WinExe = kein Konsolenfenster beim Start -->
+    <AssemblyName>MacroKeyboardSync</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="10.0.12" />
+    <PackageReference Include="System.IO.Ports" Version="10.0.12" />
+    <PackageReference Include="System.Windows.Extensions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Win32.SystemEvents" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>
