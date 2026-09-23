@@ -90,8 +90,3 @@ auf dem Flash-Speicher des Pico – bei physischem Zugriff auf das Gerät ist er
 auslesbar. Für den privaten Gebrauch an einem einzelnen, vertrauenswürdigen
 Rechner ist das ein bewusst akzeptiertes Risiko, kein Ersatz für einen echten
 Passwortmanager.
-
-## Lizenz
-
-Privates Hobbyprojekt, siehe [100prznt.de](https://100prznt.de) für weitere
-DIY-Projekte.
