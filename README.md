@@ -58,6 +58,7 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
 src/boot.py       Aktiviert den zweiten USB-CDC-Datenkanal (usb_cdc.data)
 src/code.py       Hauptprogramm: Taster-Logik, HID-Ausgabe, Mausjiggler, Sync
 src/macros.py     Anpassbare Texte/Konstanten (TEXT_M2, TEXT_M4, TODO_SIGNATURE)
+src/lib/          Benötigte CircuitPython-Bibliotheken (adafruit_hid, dt. Tastaturlayout)
 install/          CircuitPython-UF2 für den Pico (de_DE)
 MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
 ```
@@ -66,16 +67,22 @@ MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
 
 1. [CircuitPython](https://circuitpython.org/board/raspberry_pi_pico/) auf den
    Pico flashen (die passende UF2-Datei liegt auch in `install/`).
-2. `adafruit_hid` aus dem
-   [Adafruit CircuitPython Bundle](https://circuitpython.org/libraries) in
-   `lib/` kopieren.
-3. Für ein deutsches Tastaturlayout zusätzlich `keyboard_layout_win_de.py` und
-   `keycode_win_de.py` aus
-   [Neradoc/Circuitpython_Keyboard_Layouts](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts)
-   nach `lib/` kopieren.
-4. `boot.py`, `code.py` und `macros.py` aus `src/` auf das `CIRCUITPY`-Laufwerk
+2. Den Ordner `src/lib/` in den Ordner `lib/` auf dem `CIRCUITPY`-Laufwerk
+   kopieren. Er enthält bereits alle benötigten Bibliotheken, sie müssen
+   nicht separat heruntergeladen werden:
+   - `adafruit_hid/` aus dem
+     [Adafruit CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID)
+   - `keyboard_layout_win_de.py` und `keycode_win_de.py` (deutsches
+     Tastaturlayout) aus
+     [Neradoc/Circuitpython_Keyboard_Layouts](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts)
+
+   Die zugehörigen Lizenzen liegen als `LICENSE-*` daneben (beide MIT). Wer
+   lieber aktuelle Versionen nutzt, kann sie stattdessen selbst aus dem
+   [Adafruit CircuitPython Bundle](https://circuitpython.org/libraries) bzw.
+   dem Neradoc-Repo holen.
+3. `boot.py`, `code.py` und `macros.py` aus `src/` auf das `CIRCUITPY`-Laufwerk
    kopieren (alle drei ins Root, `macros.py` muss neben `code.py` liegen).
-5. `macros.py` an die eigenen Texte anpassen (Name/Kürzel für M1, Text für die
+4. `macros.py` an die eigenen Texte anpassen (Name/Kürzel für M1, Text für die
    M1+M3-Combo).
 
 ## Einrichtung (Companion-App)

@@ -18,6 +18,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!src/lib/
 lib64/
 parts/
 sdist/
@@ -560,3 +561,22 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+# KiCad
+*-backups/
+*.kicad_prl
+*-cache.lib
+*-cache.kicad_sym
+*-rescue.lib
+*-rescue.dcm
+*-save.kicad_pcb
+*-save.kicad_sch
+*-save.pro
+*.bak
+*.kicad_pcb-bak
+*.kicad_sch-bak
+_autosave-*
+fp-info-cache
+\#auto_saved_files\#
+fp-lib-table.bak
+sym-lib-table.bak
