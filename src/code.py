@@ -126,7 +126,7 @@ last_m1 = True
 last_m2 = True
 last_m3 = True
 
-# --- Combo-Erkennung M1+M3 -> "M4" + Enter, nur wenn AnyConnect aktiv oder PC gesperrt ---
+# --- Combo-Erkennung M1+M3 -> "M4" + Enter, nur bei passender Anwendung oder gesperrtem PC ---
 combo_active = False     # True, solange M1+M3 gemeinsam gehalten werden
 m1_suppressed = False    # verhindert Text bei M1 beim Loslassen nach einer Combo
 m3_suppressed = False    # verhindert M3-Kurz-/Lang-Logik nach einer Combo
@@ -151,9 +151,9 @@ while True:
     state_m3 = m3.value
 
     # --- Combo: M1 + M3 gleichzeitig gedrueckt -> "M4" + Enter,
-    #     aber nur wenn Cisco AnyConnect aktiv ist oder der PC gesperrt ist ---
+    #     aber nur bei passender Anwendung oder gesperrtem PC ---
     if (not state_m1) and (not state_m3) and not combo_active:
-        if active_window == "ANYCONNECT" or pc_is_locked(now):
+        if active_window == "VPN" or pc_is_locked(now):
             layout.write(TEXT_M4)
             kbd.send(Keycode.ENTER)
         combo_active = True

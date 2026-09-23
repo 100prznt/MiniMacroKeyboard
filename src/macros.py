@@ -4,8 +4,8 @@
 
 TEXT_M2 = "M2"
 
-# Wird bei der Tastenkombo M1+M3 ausgegeben (nur wenn Cisco AnyConnect aktiv
-# oder der PC gesperrt ist) - siehe Combo-Logik in code.py.
+# Wird bei der Tastenkombo M1+M3 ausgegeben (nur bei passender Anwendung
+# oder gesperrtem PC) - siehe Combo-Logik in code.py.
 TEXT_M4 = "M4"
 
 # --- TODO-Kommentar (M1): Name fuer die erste Zeile ---

@@ -33,7 +33,7 @@ namespace MacroKeyboardSync
             { "GitHubDesktop", "GITHUB" },
             { "ms-teams", "TEAMS" },         // neues Microsoft Teams (WebView2-basiert)
             { "Teams", "TEAMS" },            // klassisches Microsoft Teams
-            { "csc_ui", "ANYCONNECT" },      // Cisco Secure Client AnyConnect
+            { "csc_ui", "VPN" },
         };
 
         private const string DefaultApp = "DEFAULT";
