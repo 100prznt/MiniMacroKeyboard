@@ -5,6 +5,7 @@ image: Visual Studio 2022
 branches:
   only:
     - main
+    - /^v\d.*/   # Tags wie v1.0.0 loesen den Release-Build aus
 
 configuration: Release
 
@@ -16,11 +17,11 @@ install:
   - dotnet --info
 
 before_build:
-  - dotnet restore MacroKeyboardSync\MacroKeyboardSync.sln
+  - dotnet restore MacroKeyboardSync\MacroKeyboardSync.sln -r win-x64
 
 build_script:
-  - dotnet build MacroKeyboardSync\MacroKeyboardSync.sln -c %CONFIGURATION% --no-restore
-  - dotnet publish MacroKeyboardSync\MacroKeyboardSync.csproj -c %CONFIGURATION% --no-restore -o publish\MacroKeyboardSync
+  - dotnet build MacroKeyboardSync\MacroKeyboardSync.sln -c %CONFIGURATION% -r win-x64 --no-restore
+  - dotnet publish MacroKeyboardSync\MacroKeyboardSync.csproj -c %CONFIGURATION% -r win-x64 --self-contained false --no-restore -o publish\MacroKeyboardSync
   - 7z a MacroKeyboardSync.zip .\publish\MacroKeyboardSync\*
   - 7z a MacroKeyboardPico.zip .\src\*
 
@@ -32,3 +33,18 @@ artifacts:
     name: MacroKeyboardSync
   - path: MacroKeyboardPico.zip
     name: MacroKeyboardPico
+
+# GitHub-Release nur bei Tag-Builds (git tag v1.0.0 && git push --tags).
+# auth_token: GitHub Personal Access Token (Scope "public_repo" bzw. "repo"),
+# in AppVeyor unter Account -> Encrypt YAML verschluesseln und hier einsetzen.
+deploy:
+  - provider: GitHub
+    release: MiniMacroKeyboard $(APPVEYOR_REPO_TAG_NAME)
+    description: 'Release $(APPVEYOR_REPO_TAG_NAME): Windows-Companion-App (MacroKeyboardSync) und Pico-Dateien (boot.py, code.py, macros.py).'
+    auth_token:
+      secure: CS8iZldTMAHjWvK8RNerBk+qZtooKfJgA3n3dARn9dd8lLXInoiGLJWvQvEAFaHY
+    artifact: MacroKeyboardSync, MacroKeyboardPico
+    draft: false
+    prerelease: false
+    on:
+      APPVEYOR_REPO_TAG: true
