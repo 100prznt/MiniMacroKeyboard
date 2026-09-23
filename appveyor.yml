@@ -40,11 +40,12 @@ artifacts:
 deploy:
   - provider: GitHub
     release: MiniMacroKeyboard $(APPVEYOR_REPO_TAG_NAME)
+    tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'Release $(APPVEYOR_REPO_TAG_NAME): Windows-Companion-App (MacroKeyboardSync) und Pico-Dateien (boot.py, code.py, macros.py).'
     auth_token:
-      secure: CS8iZldTMAHjWvK8RNerBk+qZtooKfJgA3n3dARn9dd8lLXInoiGLJWvQvEAFaHY
+      secure: sjnQQ4R0jVVuk08yTOOnlKbTK4RvhDpSWTapKgyKmoQw/FoRdCbdRqBJJQpL4AmO
     artifact: MacroKeyboardSync, MacroKeyboardPico
     draft: false
-    prerelease: false
+    prerelease: true
     on:
       APPVEYOR_REPO_TAG: true
