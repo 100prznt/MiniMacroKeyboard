@@ -39,6 +39,7 @@ namespace MacroKeyboardSync
         private const string DefaultApp = "DEFAULT";
         private const int PollIntervalMs = 500;
         private const int TimeSyncIntervalMs = 5 * 60 * 1000; // alle 5 Minuten
+        private const int LockHeartbeatIntervalMs = 15 * 1000; // Pico wertet >45 s Stille als "gesperrt"
 
         private static SerialPort? _port;
         private static string _lastSentApp = "";
@@ -47,6 +48,7 @@ namespace MacroKeyboardSync
         // --- Sperrstatus ---
         private static volatile bool _isLocked = false;
         private static bool? _lastSentLocked = null;
+        private static DateTime _lastLockSent = DateTime.MinValue;
 
         private static void Main()
         {
@@ -104,6 +106,7 @@ namespace MacroKeyboardSync
             _lastSentApp = "";
             _lastTimeSync = DateTime.MinValue;
             _lastSentLocked = null;
+            _lastLockSent = DateTime.MinValue;
         }
 
         // Sucht ueber die USB-Vendor-ID (0x239A = Adafruit/CircuitPython-Boards)
@@ -162,10 +165,12 @@ namespace MacroKeyboardSync
             if (_port is not { IsOpen: true }) return;
 
             bool locked = _isLocked;
-            if (_lastSentLocked == locked) return;
+            bool heartbeatDue = (DateTime.Now - _lastLockSent).TotalMilliseconds >= LockHeartbeatIntervalMs;
+            if (_lastSentLocked == locked && !heartbeatDue) return;
 
             _port.WriteLine($"LOCK:{(locked ? 1 : 0)}");
             _lastSentLocked = locked;
+            _lastLockSent = DateTime.Now;
         }
 
         private static string GetActiveAppTag()
