@@ -154,6 +154,7 @@ while True:
     #     aber nur bei passender Anwendung oder gesperrtem PC ---
     if (not state_m1) and (not state_m3) and not combo_active:
         if active_window == "VPN" or pc_is_locked(now):
+            kbd.send(Keycode.BACKSPACE)
             layout.write(TEXT_M4)
             kbd.send(Keycode.ENTER)
         combo_active = True
