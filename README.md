@@ -14,7 +14,7 @@ Ein Windows-Companion-Programm in C# (`MacroKeyboardSync/`) läuft im Hintergrun
 und meldet dem Pico über einen zweiten USB-CDC-Kanal Uhrzeit, die aktuell aktive
 Anwendung und den Sperrstatus des PCs.
 
-![MMK1](MiniKeyboard_MMK1.jpg)
+![MMK1 Rendering](MiniKeyboard_Rendering.png)
 
 ## Funktionen
 
@@ -51,6 +51,10 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
   - M1 → GPIO17
   - M2 → GPIO26
   - M3 → GPIO28
+
+### Erster Hardwareaufbau
+
+![Erster Hardwareaufbau](MiniKeyboard_MMK1.jpg)
 
 ## Repo-Struktur
 
