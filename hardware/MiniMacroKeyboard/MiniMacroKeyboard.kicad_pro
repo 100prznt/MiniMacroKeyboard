@@ -557,7 +557,7 @@
       "netlist": "",
       "plot": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "MiniMacroKeyboard.step",
       "vrml": ""
     },
     "page_layout_descr_file": "kicad-embed://rca_default.kicad_wks"
