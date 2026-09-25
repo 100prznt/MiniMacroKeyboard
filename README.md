@@ -14,7 +14,7 @@ Ein Windows-Companion-Programm in C# (`MacroKeyboardSync/`) läuft im Hintergrun
 und meldet dem Pico über einen zweiten USB-CDC-Kanal Uhrzeit, die aktuell aktive
 Anwendung und den Sperrstatus des PCs.
 
-![MMK1](photo-mmk1.jpg)
+![MMK1](MiniKeyboard_MMK1.jpg)
 
 ## Funktionen
 
@@ -57,7 +57,7 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
 ```
 src/boot.py       Aktiviert den zweiten USB-CDC-Datenkanal (usb_cdc.data)
 src/code.py       Hauptprogramm: Taster-Logik, HID-Ausgabe, Mausjiggler, Sync
-src/macros.py     Anpassbare Texte/Konstanten (TEXT_M2, TEXT_M4, TODO_SIGNATURE)
+src/macros.py.template  Vorlage fuer macros.py (TEXT_M2, TEXT_M4, TODO_SIGNATURE)
 src/lib/          Benötigte CircuitPython-Bibliotheken (adafruit_hid, dt. Tastaturlayout)
 install/          CircuitPython-UF2 für den Pico (de_DE)
 MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
@@ -80,10 +80,11 @@ MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
    lieber aktuelle Versionen nutzt, kann sie stattdessen selbst aus dem
    [Adafruit CircuitPython Bundle](https://circuitpython.org/libraries) bzw.
    dem Neradoc-Repo holen.
-3. `boot.py`, `code.py` und `macros.py` aus `src/` auf das `CIRCUITPY`-Laufwerk
-   kopieren (alle drei ins Root, `macros.py` muss neben `code.py` liegen).
-4. `macros.py` an die eigenen Texte anpassen (Name/Kürzel für M1, Text für die
-   M1+M3-Combo).
+3. `boot.py` und `code.py` aus `src/` auf das `CIRCUITPY`-Laufwerk kopieren.
+4. `src/macros.py.template` nach `macros.py` kopieren (muss neben `code.py`
+   liegen) und an die eigenen Texte anpassen (Name/Kürzel für M1, Text für
+   die M1+M3-Combo). `macros.py` ist bewusst per `.gitignore` ausgeschlossen,
+   damit persönliche Texte nicht versehentlich committet werden.
 
 ## Einrichtung (Companion-App)
 

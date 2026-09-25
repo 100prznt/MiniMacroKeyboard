@@ -1,4 +1,4 @@
-# Privat macro texts
+# Privat macro texts (Vorlage liegt als macros.py.template im Repo)
 macros.py
 
 #KiCad History
@@ -582,5 +582,6 @@ ASALocalRun/
 _autosave-*
 fp-info-cache
 \#auto_saved_files\#
+*.lck
 fp-lib-table.bak
 sym-lib-table.bak

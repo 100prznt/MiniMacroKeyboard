@@ -52,7 +52,7 @@ deploy:
   - provider: GitHub
     release: MiniMacroKeyboard $(APPVEYOR_REPO_TAG_NAME)
     tag: $(APPVEYOR_REPO_TAG_NAME)
-    description: 'Release $(APPVEYOR_REPO_TAG_NAME): Windows-Companion-App (MacroKeyboardSync) und Pico-Dateien (boot.py, code.py, macros.py).'
+    description: 'Release $(APPVEYOR_REPO_TAG_NAME): Windows-Companion-App (MacroKeyboardSync) und Pico-Dateien (boot.py, code.py, macros.py.template).'
     auth_token:
       secure: sjnQQ4R0jVVuk08yTOOnlKbTK4RvhDpSWTapKgyKmoQw/FoRdCbdRqBJJQpL4AmO
     artifact: MacroKeyboardSync, MacroKeyboardPico

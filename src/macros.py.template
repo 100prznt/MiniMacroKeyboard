@@ -1,6 +1,11 @@
 # --- Makrotexte fuer das Makro-Keyboard ---
 # Ausgelagert aus code.py, damit die Texte separat gepflegt werden koennen,
 # ohne die eigentliche Ablauflogik anzufassen.
+#
+# Diese Datei ist eine Vorlage. Vor dem Kopieren auf den Pico in
+# "macros.py" umbenennen und die Werte anpassen - "macros.py" selbst ist
+# per .gitignore ausgeschlossen, damit persoenliche Texte (z.B. ein bei
+# TEXT_M4 hinterlegtes Passwort) nicht versehentlich committet werden.
 
 TEXT_M2 = "M2"
 
