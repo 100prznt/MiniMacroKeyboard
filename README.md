@@ -54,7 +54,7 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
 
 ### CAD-Ansichten
 
-| Top | Right |
+| Von oben | Von rechts |
 |---|---|
 | ![CAD-Ansicht von oben](MiniMacroKeyboard_CAD_Top.png) | ![CAD-Ansicht von rechts](MiniMacroKeyboard_CAD_Right.png) |
 
