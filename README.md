@@ -52,6 +52,12 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
   - M2 → GPIO26
   - M3 → GPIO28
 
+### CAD-Ansichten
+
+| Top | Right |
+|---|---|
+| ![CAD-Ansicht von oben](MiniMacroKeyboard_CAD_Top.png) | ![CAD-Ansicht von rechts](MiniMacroKeyboard_CAD_Right.png) |
+
 ### Erster Hardwareaufbau
 
 ![Erster Hardwareaufbau](MiniKeyboard_MMK1.jpg)
