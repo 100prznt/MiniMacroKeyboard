@@ -58,6 +58,8 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
 |---|---|
 | ![CAD-Ansicht von oben](MiniMacroKeyboard_CAD_Top.png) | ![CAD-Ansicht von rechts](MiniMacroKeyboard_CAD_Right.png) |
 
+*Rechts:* Auf der Unterseite des 3D-gedruckten Rahmens sorgen 4 Gummipuffer für einen sicheren Stand.
+
 ### Erster Hardwareaufbau
 
 ![Erster Hardwareaufbau](MiniKeyboard_MMK1.jpg)
