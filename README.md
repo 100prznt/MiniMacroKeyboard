@@ -36,7 +36,7 @@ Herzschlag-Muster (zwei Auf-/Abdimm-Pulse, kurze Pause, dann eine längere Pause
 in Reihe an GPIO18 über einen BSS138-Levelshifter angeschlossen, zeigen den
 aktuellen Zustand an:
 - **Aktive Anwendung:** alle drei LEDs leuchten in einer festen Farbe je nach
-  `WIN:`-Tag – z. B. Lila für Visual Studio, Orange für KiCad, Grün für den
+  `WIN:`-Tag – z. B. Lila für Visual Studio, Blau für VS Code, Orange für KiCad, Grün für den
   KiCad-PCB-Editor, Rot für Opera, Weiß für den Explorer, Blau für Outlook/Teams,
   Lila für GitHub Desktop. Unbekannte Anwendungen zeigen ein gedimmtes Grau
   (`DEFAULT`).
@@ -47,10 +47,14 @@ aktuellen Zustand an:
   anderen Anzeigen.
 
 Die Helligkeit aller Status-LEDs ist über die Konstante `MAX_BRIGHTNESS` in
-`code.py` gedeckelt (Standard: 75 %).
+`code.py` gedeckelt (Standard: 65 %).
 
 **Sync mit dem PC:** Die Companion-App erkennt über die USB-Vendor-ID automatisch
-den passenden COM-Port und sendet dem Pico:
+den passenden COM-Port. Da der Pico zwei COM-Ports meldet (REPL-Konsole und
+Datenkanal aus `boot.py`), wird anhand der USB-Interface-Nummer gezielt der
+Datenkanal gewählt – die Konsole (`MI_00`) wird nie benutzt. Fehlt `boot.py`
+auf dem Pico, gibt es keinen Datenkanal und die App verbindet sich nicht. Über
+den Datenkanal sendet sie dem Pico:
 - `TIME:` alle 5 Minuten (stellt die Software-RTC des Pico)
 - `WIN:` bei jedem Wechsel der aktiven Anwendung (VS, VS Code, KiCad, KiCad-PCB-Editor,
   Opera, Explorer, Outlook, GitHub Desktop, Teams, VPN-Client – alles andere
