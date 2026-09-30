@@ -2,6 +2,7 @@ import time
 import board
 import digitalio
 import pwmio
+import neopixel
 import usb_hid
 import usb_cdc
 import rtc
@@ -31,6 +32,82 @@ def make_switch(pin):
 m1 = make_switch(SWITCH_M1)
 m2 = make_switch(SWITCH_M2)
 m3 = make_switch(SWITCH_M3)
+
+# --- RGB-Status-LEDs: 3x LTST-E683CEGBW in Reihe an GPIO18 (ueber BSS138-Levelshifter) ---
+# Alle drei LEDs zeigen gemeinsam die aktuell aktive Anwendung per Farbe an,
+# ausser bei Sonderfaellen (VPN-Blinken, PC gesperrt -> Lauflicht).
+# Falls die Farben vertauscht wirken, pixel_order=neopixel.RGB statt GRB testen.
+LED_DATA_PIN = board.GP18
+LED_COUNT = 3
+MAX_BRIGHTNESS = 0.65   # 0.0-1.0, globale Helligkeitsgrenze fuer alle Status-LEDs
+
+pixels = neopixel.NeoPixel(
+    LED_DATA_PIN, LED_COUNT, brightness=MAX_BRIGHTNESS, auto_write=False,
+    pixel_order=neopixel.RGB,
+)
+
+# Farbe je aktiver Anwendung (WIN:-Tag von der Companion-App, siehe check_serial())
+APP_COLORS = {
+    "VS":        (150, 0, 200),   # Visual Studio: kraeftiges Lila (wie das VS-Icon)
+    "VSCODE":    (0, 122, 204),   # Visual Studio Code: Blau
+    "KICAD":     (255, 80, 0),   # KiCad (Projektmanager/Schaltplan): Orange
+    "KICAD_PCB": (40, 170, 0),    # KiCad PCB-Editor (Pcbnew): Gruen
+    "OPERA":     (255, 0, 0),     # Opera: Rot
+    "EXPLORER":  (255, 255, 255), # Explorer: Weiss
+    "OUTLOOK":   (15, 15, 240),   # Outlook: Blau (wie das Outlook-Logo)
+    "GITHUB":    (110, 0, 200),   # GitHub: Lila (wie das GitHub-Logo)
+    "TEAMS":     (30, 50, 235),   # Teams: kraeftiges Blau (wie das Teams-Logo)
+    "DEFAULT":   (20, 20, 20),
+}
+
+# VPN aktiv: rot/blau blinkend, wie ein US-Polizeiauto
+VPN_FLASH_COLOR_A = (255, 0, 0)
+VPN_FLASH_COLOR_B = (0, 0, 255)
+VPN_FLASH_INTERVAL = 0.15    # Sekunden je Farbphase
+
+# PC gesperrt: rotes Lauflicht (Knight-Rider/KITT-Scanner) ueber die 3 LEDs, gedimmt
+LOCK_SCAN_COLOR = (255, 0, 0)
+LOCK_SCAN_INTERVAL = 0.24          # Sekunden je Schritt
+LOCK_SCAN_BRIGHTNESS = 0.4         # zusaetzliche Abdunklung des aktiven Pixels (relativ zu MAX_BRIGHTNESS)
+LOCK_SCAN_TRAIL_BRIGHTNESS = 0.15  # Helligkeit der beiden Nachbar-Pixel (Lauflicht-Schweif)
+
+def _scaled(color, factor):
+    return tuple(int(c * factor) for c in color)
+
+_last_led_state = None
+
+def update_status_leds(now):
+    global _last_led_state
+
+    if pc_is_locked(now):
+        # Knight-Rider-Scanner: ein Pixel wandert ueber die Kette, mit Schweif
+        step = int(now / LOCK_SCAN_INTERVAL)
+        ping_pong = (0, 1, 2, 1)
+        pos = ping_pong[step % len(ping_pong)]
+
+        colors = [(0, 0, 0)] * LED_COUNT
+        colors[pos] = _scaled(LOCK_SCAN_COLOR, LOCK_SCAN_BRIGHTNESS)
+        for neighbor in (pos - 1, pos + 1):
+            if 0 <= neighbor < LED_COUNT:
+                colors[neighbor] = _scaled(LOCK_SCAN_COLOR, LOCK_SCAN_TRAIL_BRIGHTNESS)
+        state = ("lock", pos)
+
+    elif active_window == "VPN":
+        phase = int(now / VPN_FLASH_INTERVAL) % 2
+        color = VPN_FLASH_COLOR_A if phase == 0 else VPN_FLASH_COLOR_B
+        colors = [color] * LED_COUNT
+        state = ("vpn", phase)
+
+    else:
+        color = APP_COLORS.get(active_window, APP_COLORS["DEFAULT"])
+        colors = [color] * LED_COUNT
+        state = ("app", color)
+
+    if state != _last_led_state:
+        for i, c in enumerate(colors):
+            pixels[i] = c
+        pixels.show()
+        _last_led_state = state
 
 # --- Onboard-LED: Herzschlag-Blinken via PWM, solange der Jiggler aktiv ist ---
 led = pwmio.PWMOut(board.LED, frequency=1000, duty_cycle=0)
@@ -155,6 +232,7 @@ while True:
     if (not state_m1) and (not state_m3) and not combo_active:
         if active_window == "VPN" or pc_is_locked(now):
             kbd.send(Keycode.BACKSPACE)
+            time.sleep(0.25)
             layout.write(TEXT_M4)
             kbd.send(Keycode.ENTER)
         combo_active = True
@@ -213,4 +291,7 @@ while True:
     else:
         led.duty_cycle = 0
 
+    update_status_leds(now)
+
     time.sleep(0.01)
+
