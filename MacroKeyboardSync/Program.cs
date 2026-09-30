@@ -117,31 +117,60 @@ namespace MacroKeyboardSync
         // Sucht ueber die USB-Vendor-ID (0x239A = Adafruit/CircuitPython-Boards)
         // nach dem passenden COM-Port, unabhaengig davon, welche Portnummer
         // Windows gerade vergeben hat.
+        //
+        // Der Pico meldet zwei COM-Ports mit derselben Vendor-ID: die REPL-Konsole
+        // (Interface MI_00) und den Datenkanal aus boot.py (usb_cdc.data, i.d.R. MI_02).
+        // Deshalb wird der Port mit der hoechsten Interface-Nummer gewaehlt und
+        // MI_00 (Konsole) nie verwendet.
         private static string? FindPicoPortName()
         {
             using var searcher = new ManagementObjectSearcher(
                 "SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%'");
+
+            string? bestPort = null;
+            int bestInterface = 0;
 
             foreach (ManagementObject device in searcher.Get())
             {
                 string? pnpId = device["PNPDeviceID"]?.ToString();
                 string? caption = device["Caption"]?.ToString();
 
-                if (pnpId != null && caption != null && pnpId.Contains("VID_239A"))
-                {
-                    int start = caption.LastIndexOf("(COM", StringComparison.Ordinal);
-                    if (start >= 0)
-                    {
-                        int end = caption.IndexOf(')', start);
-                        if (end > start)
-                        {
-                            return caption.Substring(start + 1, end - start - 1); // "COMx"
-                        }
-                    }
-                }
+                if (pnpId == null || caption == null || !pnpId.Contains("VID_239A", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                int iface = GetUsbInterfaceNumber(pnpId);
+                if (iface <= bestInterface) continue;   // Konsole (MI_00) bzw. schlechterer Treffer
+
+                string? portName = ExtractComPortName(caption);
+                if (portName == null) continue;
+
+                bestPort = portName;
+                bestInterface = iface;
             }
 
-            return null;
+            // null, wenn nur die Konsole gefunden wurde (z.B. boot.py fehlt -> kein Datenkanal)
+            return bestPort;
+        }
+
+        // "USB\VID_239A&PID_80F4&MI_02\..." -> 2; ohne MI_-Angabe -> 0
+        private static int GetUsbInterfaceNumber(string pnpId)
+        {
+            int idx = pnpId.IndexOf("&MI_", StringComparison.OrdinalIgnoreCase);
+            if (idx < 0 || idx + 6 > pnpId.Length) return 0;
+
+            return int.TryParse(pnpId.AsSpan(idx + 4, 2), System.Globalization.NumberStyles.HexNumber, null, out int iface)
+                ? iface
+                : 0;
+        }
+
+        // "USB Serial Device (COM7)" -> "COM7"
+        private static string? ExtractComPortName(string caption)
+        {
+            int start = caption.LastIndexOf("(COM", StringComparison.Ordinal);
+            if (start < 0) return null;
+
+            int end = caption.IndexOf(')', start);
+            return end > start ? caption.Substring(start + 1, end - start - 1) : null;
         }
 
         private static void SendTimeIfDue()
