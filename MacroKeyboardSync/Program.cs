@@ -17,6 +17,9 @@ namespace MacroKeyboardSync
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder text, int count);
+
         // Prozessname (ohne .exe) -> Kennung, die an den Pico gesendet wird.
         // Ergaenzen/anpassen, falls ein Prozessname bei dir anders lautet
         // (z.B. je nach VS-/Office-Version).
@@ -24,22 +27,24 @@ namespace MacroKeyboardSync
         {
             { "devenv", "VS" },              // Visual Studio
             { "Code", "VSCODE" },            // Visual Studio Code
+            // Bei dieser KiCad-Version laufen Projektmanager, Eeschema und Pcbnew
+            // alle unter demselben Prozess "kicad.exe" - Pcbnew wird deshalb in
+            // GetActiveAppTag() zusaetzlich ueber den Fenstertitel erkannt.
             { "kicad", "KICAD" },
-            { "kicad_pcbnew", "KICAD" },
-            { "eeschema", "KICAD" },
             { "opera", "OPERA" },
             { "explorer", "EXPLORER" },
             { "OUTLOOK", "OUTLOOK" },
             { "GitHubDesktop", "GITHUB" },
             { "ms-teams", "TEAMS" },         // neues Microsoft Teams (WebView2-basiert)
             { "Teams", "TEAMS" },            // klassisches Microsoft Teams
-            { "csc_ui", "VPN" },
+            { "csc_ui", "VPN" },             // Cisco Secure Client AnyConnect
         };
 
         private const string DefaultApp = "DEFAULT";
         private const int PollIntervalMs = 500;
-        private const int TimeSyncIntervalMs = 5 * 60 * 1000; // alle 5 Minuten
-        private const int LockHeartbeatIntervalMs = 15 * 1000; // Pico wertet >45 s Stille als "gesperrt"
+        private const int TimeSyncIntervalMs = 5 * 60 * 1000;   // alle 5 Minuten
+        private const int LockHeartbeatIntervalMs = 15 * 1000;  // Sperrstatus regelmaessig erneut senden,
+                                                                  // damit der Pico eine tote Verbindung erkennt
 
         private static SerialPort? _port;
         private static string _lastSentApp = "";
@@ -48,7 +53,7 @@ namespace MacroKeyboardSync
         // --- Sperrstatus ---
         private static volatile bool _isLocked = false;
         private static bool? _lastSentLocked = null;
-        private static DateTime _lastLockSent = DateTime.MinValue;
+        private static DateTime _lastLockHeartbeat = DateTime.MinValue;
 
         private static void Main()
         {
@@ -106,7 +111,7 @@ namespace MacroKeyboardSync
             _lastSentApp = "";
             _lastTimeSync = DateTime.MinValue;
             _lastSentLocked = null;
-            _lastLockSent = DateTime.MinValue;
+            _lastLockHeartbeat = DateTime.MinValue;
         }
 
         // Sucht ueber die USB-Vendor-ID (0x239A = Adafruit/CircuitPython-Boards)
@@ -165,12 +170,14 @@ namespace MacroKeyboardSync
             if (_port is not { IsOpen: true }) return;
 
             bool locked = _isLocked;
-            bool heartbeatDue = (DateTime.Now - _lastLockSent).TotalMilliseconds >= LockHeartbeatIntervalMs;
-            if (_lastSentLocked == locked && !heartbeatDue) return;
+            bool changed = _lastSentLocked != locked;
+            bool heartbeatDue = (DateTime.Now - _lastLockHeartbeat).TotalMilliseconds >= LockHeartbeatIntervalMs;
+
+            if (!changed && !heartbeatDue) return;
 
             _port.WriteLine($"LOCK:{(locked ? 1 : 0)}");
             _lastSentLocked = locked;
-            _lastLockSent = DateTime.Now;
+            _lastLockHeartbeat = DateTime.Now;
         }
 
         private static string GetActiveAppTag()
@@ -184,7 +191,26 @@ namespace MacroKeyboardSync
             {
                 using var proc = Process.GetProcessById((int)pid);
                 string name = proc.ProcessName;
-                return KnownApps.TryGetValue(name, out string? tag) ? tag : DefaultApp;
+
+                if (!KnownApps.TryGetValue(name, out string? tag))
+                    return DefaultApp;
+
+                // Pcbnew laeuft bei dieser KiCad-Version im selben Prozess wie der
+                // Rest von KiCad - deshalb hier zusaetzlich ueber den Fenstertitel
+                // unterscheiden, damit Pcbnew seine eigene LED-Farbe bekommt.
+                if (tag == "KICAD")
+                {
+                    var titleBuffer = new System.Text.StringBuilder(256);
+                    GetWindowText(hWnd, titleBuffer, titleBuffer.Capacity);
+                    string windowTitle = titleBuffer.ToString();
+
+                    if (windowTitle.IndexOf("Leiterplatteneditor", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        return "KICAD_PCB";
+                    }
+                }
+
+                return tag;
             }
             catch
             {
