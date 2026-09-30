@@ -25,18 +25,35 @@ Die Platine hat drei Taster (M1–M3), alle gegen GND schaltend:
 | **M1** | Beim Loslassen: zweizeiliger TODO-Kommentar mit Name/Kürzel und aktuellem Zeitstempel, z. B. `// Mustermann, Max (MM/Abt1) 23.09.2026 10:23:34` gefolgt von einer leeren Kommentarzeile `// ` (Zeilenumbruch per Shift+Enter) |
 | **M2** | Beim Loslassen: Text `M2` (Platzhalter, frei anpassbar) |
 | **M3** | Kurzer Druck: gibt beim Loslassen die aktuell aktive Anwendung aus (siehe unten). Langer Druck (≥ 0,5 s): schaltet den Mausjiggler sofort um, ohne auf das Loslassen zu warten |
-| **M1 + M3** (gleichzeitig) | Gibt einen hinterlegten Text (`TEXT_M4`) + Enter aus – **nur** wenn entweder eine bestimmte Anwendung (in `code.py` festgelegt) im Vordergrund ist oder der PC gerade gesperrt ist. `M2` bleibt davon unbeteiligt |
+| **M1 + M3** (gleichzeitig) | Löscht per Backspace das letzte Zeichen im aktiven Feld, wartet kurz und gibt dann einen hinterlegten Text (`TEXT_M4`) + Enter aus – **nur** wenn entweder eine bestimmte Anwendung (in `code.py` festgelegt) im Vordergrund ist oder der PC gerade gesperrt ist. `M2` bleibt davon unbeteiligt |
 
 **Mausjiggler:** Solange aktiv (Standard: direkt nach dem Einschalten), bewegt
 sich der Mauszeiger alle 25 Sekunden minimal, um Bildschirmschoner/Abwesend-Status
 (z. B. in Teams) zu verhindern. Die Onboard-LED pulsiert währenddessen in einem
 Herzschlag-Muster (zwei Auf-/Abdimm-Pulse, kurze Pause, dann eine längere Pause).
 
+**Status-LEDs:** Drei adressierbare RGB-LEDs (LTST-E683CEGBW) unter den Tastern,
+in Reihe an GPIO18 über einen BSS138-Levelshifter angeschlossen, zeigen den
+aktuellen Zustand an:
+- **Aktive Anwendung:** alle drei LEDs leuchten in einer festen Farbe je nach
+  `WIN:`-Tag – z. B. Lila für Visual Studio, Orange für KiCad, Grün für den
+  KiCad-PCB-Editor, Rot für Opera, Weiß für den Explorer, Blau für Outlook/Teams,
+  Lila für GitHub Desktop. Unbekannte Anwendungen zeigen ein gedimmtes Grau
+  (`DEFAULT`).
+- **VPN-Client aktiv:** die LEDs blinken abwechselnd Rot/Blau, wie ein
+  US-Polizeiauto.
+- **PC gesperrt:** rotes Lauflicht über die drei LEDs (Knight-Rider-/KITT-Effekt),
+  zusätzlich gedimmt gegenüber den übrigen Zuständen. Hat Vorrang vor allen
+  anderen Anzeigen.
+
+Die Helligkeit aller Status-LEDs ist über die Konstante `MAX_BRIGHTNESS` in
+`code.py` gedeckelt (Standard: 75 %).
+
 **Sync mit dem PC:** Die Companion-App erkennt über die USB-Vendor-ID automatisch
 den passenden COM-Port und sendet dem Pico:
 - `TIME:` alle 5 Minuten (stellt die Software-RTC des Pico)
-- `WIN:` bei jedem Wechsel der aktiven Anwendung (VS, VS Code, KiCad, Opera,
-  Explorer, Outlook, GitHub Desktop, Teams, VPN-Client – alles andere
+- `WIN:` bei jedem Wechsel der aktiven Anwendung (VS, VS Code, KiCad, KiCad-PCB-Editor,
+  Opera, Explorer, Outlook, GitHub Desktop, Teams, VPN-Client – alles andere
   als `DEFAULT`)
 - `LOCK:` bei Sperren/Entsperren sowie als Heartbeat alle 15 Sekunden, damit
   der Pico eine tote Verbindung erkennt
@@ -51,6 +68,8 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
   - M1 → GPIO17
   - M2 → GPIO26
   - M3 → GPIO28
+- 3x adressierbare RGB-LED LTST-E683CEGBW (in Reihe), Datenleitung an GPIO18
+  über einen BSS138-Levelshifter
 
 ### CAD-Ansichten
 
@@ -68,9 +87,9 @@ Companion-App läuft) geht der Pico sicherheitshalber von "gesperrt" aus.
 
 ```
 src/boot.py       Aktiviert den zweiten USB-CDC-Datenkanal (usb_cdc.data)
-src/code.py       Hauptprogramm: Taster-Logik, HID-Ausgabe, Mausjiggler, Sync
+src/code.py       Hauptprogramm: Taster-Logik, HID-Ausgabe, Mausjiggler, Status-LEDs, Sync
 src/macros.py.template  Vorlage fuer macros.py (TEXT_M2, TEXT_M4, TODO_SIGNATURE)
-src/lib/          Benötigte CircuitPython-Bibliotheken (adafruit_hid, dt. Tastaturlayout)
+src/lib/          Benötigte CircuitPython-Bibliotheken (adafruit_hid, neopixel, dt. Tastaturlayout)
 install/          CircuitPython-UF2 für den Pico (de_DE)
 MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
 ```
@@ -84,6 +103,9 @@ MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
    nicht separat heruntergeladen werden:
    - `adafruit_hid/` aus dem
      [Adafruit CircuitPython HID](https://github.com/adafruit/Adafruit_CircuitPython_HID)
+   - `neopixel.mpy` aus dem
+     [Adafruit CircuitPython Bundle](https://circuitpython.org/libraries)
+     (steuert die drei Status-LEDs)
    - `keyboard_layout_win_de.py` und `keycode_win_de.py` (deutsches
      Tastaturlayout) aus
      [Neradoc/Circuitpython_Keyboard_Layouts](https://github.com/Neradoc/Circuitpython_Keyboard_Layouts)
@@ -105,7 +127,11 @@ MacroKeyboardSync/ Windows-Companion-App (C#, .NET 8)
 2. Die App beim Windows-Systemstart starten lassen (z. B. Autostart-Ordner
    oder Aufgabenplanung) – sie läuft ohne Konsolenfenster im Hintergrund.
 3. Erkannte Anwendungen sind in der `KnownApps`-Dictionary in `Program.cs`
-   hinterlegt und lassen sich dort um weitere Prozessnamen ergänzen.
+   hinterlegt und lassen sich dort um weitere Prozessnamen ergänzen. Läuft
+   eine Anwendung (wie z. B. KiCad) bei dir komplett unter einem einzigen
+   Prozess, wird in `GetActiveAppTag()` zusätzlich der Fenstertitel
+   ausgewertet, um z. B. den PCB-Editor separat zu erkennen – Titeltext ggf.
+   an die eigene Sprachversion anpassen.
 
 ## Hinweis zur M1+M3-Combo
 
